@@ -1,5 +1,6 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import User from "../models/User.js";
 import { compare } from "bcryptjs";
 
@@ -25,6 +26,41 @@ passport.use(
         return done(null, user);
       } catch (err) {
         return done(err);
+      }
+    }
+  )
+);
+
+passport.use(
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: `${process.env.BASE_URL}/api/auth/google/callback`,
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+        // profile contains id, displayName, emails, photos
+        const existing = await User.findOne({ googleId: profile.id });
+        if (existing) return done(null, existing);
+
+        console.log("Profile: ", profile);
+
+        const user = await User.create({
+          googleId: profile.id,
+          fullname: profile.displayName,
+          email: profile.emails?.[0]?.value,
+          photo: profile.photos?.[0]?.value,
+          emailVerified: true,
+          providers: {
+            providerName: profile.provider,
+            providerId: profile.id,
+          },
+        });
+
+        done(null, user);
+      } catch (err) {
+        done(err);
       }
     }
   )

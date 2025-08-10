@@ -23,8 +23,8 @@ const PORT = process.env.PORT || 3000;
 connectDB();
 
 // --- view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -52,6 +52,20 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // --- routes
+app.get("/", (req, res) => {
+  res.send(`
+      <h1>Passport Google Demo</h1>
+      ${
+        req.user
+          ? `<p>Signed in as ${req.user.displayName} (${req.user.email})</p>
+        <form action="/api/auth/logout" method="get"><button type="submit">Logout</button></form>
+        <img src="${req.user.photo}" width="80" />
+      `
+          : `<a href="/api/auth/google">Sign in with Google</a>`
+      }
+      <p><a href="/api/dashboard">/profile (protected)</a></p>
+    `);
+});
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 

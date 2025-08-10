@@ -7,7 +7,6 @@ import User from "../models/User.js";
 import { sendMail } from "../utils/mailer.js";
 import { ensureAuthenticated } from "../middlewares/auth.js";
 
-
 // register page
 router.post("/register", async (req, res) => {
   try {
@@ -26,7 +25,7 @@ router.post("/register", async (req, res) => {
 
     const verifyToken = uuidv4(); // simple token (could store hashed token too)
     const user = new User({
-        fullname,
+      fullname,
       email: email.toLowerCase(),
       passwordHash,
       verifyToken,
@@ -116,6 +115,7 @@ router.get("/logout", (req, res) => {
     req.session.destroy(() =>
       res.status(200).json({ message: "Logout successful" })
     );
+    // res.redirect('/')
   });
 });
 
@@ -212,5 +212,19 @@ router.post("/reset", async (req, res) => {
 router.get("/profile", ensureAuthenticated, (req, res) => {
   res.status(200).json({ message: "profile", user: req.user });
 });
+
+// Google auth
+router.get(
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
+
+router.get('/google/callback',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    (req, res) => {
+      // Successful auth, redirect home.
+      res.redirect('/');
+    }
+  );
 
 export default router;
