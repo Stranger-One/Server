@@ -54,14 +54,18 @@ app.use(passport.session());
 // --- routes
 app.get("/", (req, res) => {
   res.send(`
-      <h1>Passport Google Demo</h1>
+      <h1>Passport Authentication</h1>
       ${
         req.user
-          ? `<p>Signed in as ${req.user.displayName} (${req.user.email})</p>
+          ? `<p>Signed in as ${req.user.fullname} (${req.user.email})</p>
         <form action="/api/auth/logout" method="get"><button type="submit">Logout</button></form>
         <img src="${req.user.photo}" width="80" />
       `
-          : `<a href="/api/auth/google">Sign in with Google</a>`
+          : `
+          <a href="/api/auth/google">Sign in with Google</a>
+          <a href="/api/auth/github">Sign in with GitHub</a>
+          <a href="/api/auth/facebook">Sign in with Facebook</a>
+          `
       }
       <p><a href="/api/dashboard">/profile (protected)</a></p>
     `);

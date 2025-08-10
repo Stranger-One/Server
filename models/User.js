@@ -6,7 +6,7 @@ const ProviderSchema = new mongoose.Schema({
 }, { _id: false });
 
 const UserSchema = new mongoose.Schema({
-  fullname: { type: String },
+  fullname: { type: String, default: "" },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   passwordHash: { type: String }, // not present for pure-OAuth users
   emailVerified: { type: Boolean, default: false },
@@ -14,9 +14,10 @@ const UserSchema = new mongoose.Schema({
   resetToken: { type: String }, // token for password reset
   resetTokenExpires: { type: Date },
   providers: [ProviderSchema],
-  googleId: { type: String },
-  displayName: { type: String },
-  photo: { type: String },
+  googleId: { type: String, default: "" },
+  githubId: { type: String, default: "" },
+  facebookId: { type: String, default: "" },  
+  photo: { type: String, default: "" },
   createdAt: { type: Date, default: Date.now }
 });
 

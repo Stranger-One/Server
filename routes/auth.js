@@ -64,7 +64,10 @@ router.post("/register", async (req, res) => {
         `,
     });
 
-    return res.status(200).json({ email: user.email });
+    return res.status(200).json({
+      email: user.email,
+      message: "We have send you a verification link, chack your inbox",
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Server error" });
@@ -87,6 +90,20 @@ router.get("/verify", async (req, res) => {
     user.verifyToken = undefined;
     await user.save();
 
+    await sendMail({
+      to: user.email,
+      subject: "Your email has been successfully verified!",
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222; max-width: 600px; margin: auto; padding: 20px;">
+          <h2 style="color: #333;">Hi ${user.name || "there"},</h2>
+          <p>Your email address has been successfully verified. 🎉</p>
+          <p>You can now log in and start using all the features of your account.</p>
+          <p>If you did not perform this action, please contact our support team immediately.</p>
+          <p style="margin-top: 30px;">Best regards,<br>Your App Team</p>
+        </div>
+      `,
+    });
+
     res.render("emailverifySuccess");
   } catch (err) {
     console.error(err);
@@ -96,6 +113,9 @@ router.get("/verify", async (req, res) => {
 
 // login
 router.post("/login", (req, res, next) => {
+  const { email, password } = req.body;
+  if (!email || !password)
+    return res.status(400).json({ error: "Email and password required" });
   passport.authenticate("local", (err, user, info) => {
     if (err) return next(err);
     if (!user)
@@ -111,11 +131,23 @@ router.post("/login", (req, res, next) => {
 // logout
 router.get("/logout", (req, res) => {
   req.logout((err) => {
-    if (err) console.error(err);
-    req.session.destroy(() =>
-      res.status(200).json({ message: "Logout successful" })
-    );
-    // res.redirect('/')
+    if (err) {
+      console.error(err);
+      return res.redirect("/"); // Optional: redirect on error
+    }
+
+    req.session.destroy((err) => {
+      if (err) {
+        console.error(err);
+        return res.redirect("/");
+      }
+
+      // Clear cookie (optional, but recommended)
+      res.clearCookie("connect.sid");
+
+      // Redirect to homepage after full logout
+      res.redirect("/");
+    });
   });
 });
 
@@ -219,12 +251,45 @@ router.get(
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
 
-router.get('/google/callback',
-    passport.authenticate('google', { failureRedirect: '/login' }),
-    (req, res) => {
-      // Successful auth, redirect home.
-      res.redirect('/');
-    }
-  );
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/" }),
+  (req, res) => {
+    // Successful auth, redirect home.
+    res.redirect("/");
+  }
+);
+
+// Github Auth
+router.get(
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
+
+router.get(
+  "/github/callback",
+  passport.authenticate("github", { failureRedirect: "/" }),
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect("/");
+  }
+);
+
+// Facebook Auth
+router.get(
+  "/facebook",
+  passport.authenticate("facebook", {
+    scope: ["email", "user_birthday", "user_gender"],
+  })
+);
+
+router.get(
+  "/facebook/callback",
+  passport.authenticate("facebook", { failureRedirect: "/" }),
+  function (req, res) {
+    // Successful authentication, redirect home.
+    res.redirect("/");
+  }
+);
 
 export default router;

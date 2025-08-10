@@ -12,12 +12,13 @@ const transporter = createTransport({
 
 export async function sendMail({ to, subject, html, text }) {
   const info = await transporter.sendMail({
-    from: `"No-Reply" <${process.env.EMAIL_USER_EMAIL}>`,
+    from: `"No-Reply" ${process.env.PROJECT_NAME} - <${process.env.EMAIL_USER_EMAIL}>`,
     to,
     subject,
     text,
     html
   });
+  console.log('Mail sent:', info);
   console.log('Mail sent:', info.messageId);
 }
 
