@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reset Password</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #6c63ff, #48c6ef);
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+      width: 100%;
+      max-width: 350px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 1.5rem;
+      font-size: 1.8rem;
+      color: #333;
+    }
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+    input:focus {
+      border-color: #6c63ff;
+    }
+    button {
+      background: #6c63ff;
+      color: white;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #5848d6;
+    }
+    .error {
+      color: red;
+      font-size: 14px;
+      margin-bottom: 1rem;
+    }
+  </style>
+  <script>
+    function checkPasswordsMatch(e) {
+      const form = document.getElementById('resetForm');
+      const password = form.password.value;
+      const confirm = form.confirm.value;
+      if (password !== confirm) {
+        alert('Passwords do not match.');
+        e.preventDefault();
+        return false;
+      }
+      return true;
+    }
+    window.addEventListener('DOMContentLoaded', function() {
+      const form = document.getElementById('resetForm');
+      if (form) {
+        form.addEventListener('submit', checkPasswordsMatch);
+      }
+    });
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>Reset Password</h1>
+    <% if (error) { %>
+      <p class="error"><%= error %></p>
+    <% } %>
+    <form id="resetForm" method="post" action="/api/auth/reset">
+      <input type="hidden" name="token" value="<%= token %>"/>
+      <input type="hidden" name="email" value="<%= email %>"/>
+      <input name="password" type="password" placeholder="New password" required />
+      <input name="confirm" type="password" placeholder="Confirm password" required />
+      <button type="submit">Reset</button>
+    </form>
+  </div>
+</body>
+</html>
